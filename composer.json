@@ -1,0 +1,19 @@
+{
+    "name": "sujan/responder",
+    "description": "Responds based on request type",
+    "require": {},
+    "require-dev": {
+        "phpunit/phpunit": "^5.3",
+        "symfony/http-foundation": "^3.0"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Sujan Dhakal",
+            "email": "sujandhakal@gmail.com"
+        }
+    ],
+    "autoload" : {
+        "psr-0":{"Responder\\":"src/"}
+    }
+}
