@@ -6,7 +6,7 @@ class ResponderTest extends PHPUnit_Framework_TestCase
     public function test_responder_responds_ajax_get_request() {
         $request = \Symfony\Component\HttpFoundation\Request::create('/test','GET');
         $request->headers->add(["X-Requested-With"=>"XMLHttpRequest"]);
-        $srtf = new SymfonyRequestTypeFinderAdapter($request);
+        $srtf = new SymfonyRequestTypeResolver($request);
 
         $message = \Responder\Responder::create($srtf)->whenGet(function(){
             return "I was Get!";
@@ -20,7 +20,7 @@ class ResponderTest extends PHPUnit_Framework_TestCase
     public function test_responder_responds_ajax_post_request() {
         $request = \Symfony\Component\HttpFoundation\Request::create('/test','POST');
         $request->headers->add(["X-Requested-With"=>"XMLHttpRequest"]);
-        $srtf = new SymfonyRequestTypeFinderAdapter($request);
+        $srtf = new SymfonyRequestTypeResolver($request);
         $responder = \Responder\Responder::create($srtf)->whenGet(function(){
             return "I was Get!";
         })->whenGetAjax(function() {
@@ -32,14 +32,14 @@ class ResponderTest extends PHPUnit_Framework_TestCase
 
         $request = \Symfony\Component\HttpFoundation\Request::create('/test','GET');
         $request->headers->add(["X-Requested-With"=>"XMLHttpRequest"]);
-        $srtf = new SymfonyRequestTypeFinderAdapter($request);
-        $responder->setRequestTypeFinder($srtf);
+        $srtf = new SymfonyRequestTypeResolver($request);
+        $responder->setRequestTypeResolver($srtf);
 
         $this->assertEquals("I was Get+Ajax", $responder->respond());
 
         $request = \Symfony\Component\HttpFoundation\Request::create('/test','GET');
-        $srtf = new SymfonyRequestTypeFinderAdapter($request);
-        $responder->setRequestTypeFinder($srtf);
+        $srtf = new SymfonyRequestTypeResolver($request);
+        $responder->setRequestTypeResolver($srtf);
 
         $this->assertEquals("I was Get!", $responder->respond());
 

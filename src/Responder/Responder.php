@@ -1,27 +1,23 @@
 <?php
 namespace Responder;
 
-use Responder\Adapter\RequestTypeFinderAdapterInterface;
-use Responder\RequestTypeFinder\RequestTypeFinder;
-use Responder\RequestTypeFinder\RequestTypeFinderInterface;
+use Responder\Resolver\RequestTypeResolverInterface;
+use Responder\Resolver\RequestTypeResolverAdapter;
 
 class Responder
 {
     private $actions = [];
-    private $requestTypeFinder = null;
+    private $requestTypeResolver = null;
 
-    private function __construct(){
-
-    }
+    private function __construct() { }
 
     /**
-     * Create responder instance
-     * @param RequestTypeFinderInterface $requestTypeFinder
+     * @param RequestTypeResolverInterface $requestTypeResolver
      * @return Responder
      */
-    public static function create(RequestTypeFinderAdapterInterface $requestTypeFinderAdapter) {
-        $responder = new Responder();
-        $responder->setRequestTypeFinder($requestTypeFinderAdapter);
+    public static function create(RequestTypeResolverInterface $requestTypeResolver) {
+        $responder = new self();
+        $responder->setRequestTypeResolver($requestTypeResolver);
 
         return $responder;
     }
@@ -29,17 +25,15 @@ class Responder
     /**
      * @return null
      */
-    public function getRequestTypeFinder()
-    {
-        return $this->requestTypeFinder;
+    protected function getRequestTypeResolver() {
+        return $this->requestTypeResolver;
     }
 
     /**
-     * @param null $requestTypeFinder
+     * @param RequestTypeResolverInterface $requestTypeResolver
      */
-    public function setRequestTypeFinder(RequestTypeFinderAdapterInterface $requestTypeFinderAdapter)
-    {
-        $this->requestTypeFinder = RequestTypeFinder::create($requestTypeFinderAdapter);
+    public function setRequestTypeResolver(RequestTypeResolverInterface $requestTypeResolver) {
+        $this->requestTypeResolver = RequestTypeResolverAdapter::create($requestTypeResolver);
     }
 
     /**
@@ -47,9 +41,35 @@ class Responder
      * @param callable $callback
      * @return Responder
      */
-    public function whenPost(callable $callback)
-    {
+    public function whenPost(callable $callback) {
         return $this->when('post', $callback);
+    }
+
+    /**
+     * Register put callback
+     * @param callable $callback
+     * @return Responder
+     */
+    public function whenPut(callable $callback) {
+        return $this->when('put', $callback);
+    }
+
+    /**
+     * Register patch callback
+     * @param callable $callback
+     * @return Responder
+     */
+    public function whenPatch(callable $callback) {
+        return $this->when('patch', $callback);
+    }
+
+    /**
+     * Register delete callback
+     * @param callable $callback
+     * @return Responder
+     */
+    public function whenDelete(callable $callback) {
+        return $this->when('delete', $callback);
     }
 
     /**
@@ -57,8 +77,7 @@ class Responder
      * @param callable $callback
      * @return Responder
      */
-    public function whenGet(callable $callback)
-    {
+    public function whenGet(callable $callback) {
         return $this->when('get', $callback);
     }
 
@@ -67,8 +86,7 @@ class Responder
      * @param callable $callback
      * @return Responder
      */
-    public function whenPostAjax(callable $callback)
-    {
+    public function whenPostAjax(callable $callback) {
         return $this->when('post+ajax', $callback);
     }
 
@@ -77,8 +95,7 @@ class Responder
      * @param callable $callback
      * @return Responder
      */
-    public function whenGetAjax(callable $callback)
-    {
+    public function whenGetAjax(callable $callback) {
         return $this->when('get+ajax', $callback);
     }
 
@@ -87,8 +104,7 @@ class Responder
      * @param callable $callback
      * @return Responder
      */
-    private function when($method, callable $callback)
-    {
+    private function when($method, callable $callback) {
         $this->actions[$method] = $callback;
 
         return $this;
@@ -98,14 +114,13 @@ class Responder
      * @param Request $request
      * @return mixed|void
      */
-    public function respond()
-    {
-        if(!$this->requestTypeFinder instanceof RequestTypeFinderInterface) {
+    public function respond() {
+        if (!$this->getRequestTypeResolver() instanceof RequestTypeResolverAdapter) {
             return false;
         }
 
-        $type = $this->requestTypeFinder->getRequestType();
-        if(!isset($this->actions[$type])) {
+        $type = $this->getRequestTypeResolver()->getRequestType();
+        if (!isset($this->actions[$type])) {
             return false;
         }
 
